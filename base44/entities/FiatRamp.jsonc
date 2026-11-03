@@ -1,0 +1,118 @@
+{
+  "name": "FiatRamp",
+  "type": "object",
+  "properties": {
+    "userId": {
+      "type": "string"
+    },
+    "fullName": {
+      "type": "string"
+    },
+    "direction": {
+      "type": "string",
+      "enum": ["ONRAMP", "OFFRAMP"],
+      "description": "ONRAMP = M-Pesa KES in → stablecoin out; OFFRAMP = stablecoin in → M-Pesa KES out"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "AWAITING_PAYMENT",
+        "SENDING_CRYPTO",
+        "CRYPTO_SENT",
+        "AWAITING_CRYPTO",
+        "SENDING_PAYOUT",
+        "PAYOUT_PENDING",
+        "COMPLETED",
+        "FAILED",
+        "NEEDS_REVIEW"
+      ],
+      "description": "Ramp state machine (see base44/shared/fingoRamp.ts)"
+    },
+    "phoneNumber": {
+      "type": "string",
+      "description": "M-Pesa MSISDN (E.164)"
+    },
+    "kesAmount": {
+      "type": "number",
+      "description": "KES charged (onramp) or paid out (offramp), whole shillings"
+    },
+    "cryptoAmount": {
+      "type": "number",
+      "description": "Stablecoin delivered (onramp) or sold (offramp)"
+    },
+    "chain": {
+      "type": "string",
+      "enum": ["bnb", "ethereum", "polygon"]
+    },
+    "token": {
+      "type": "string",
+      "enum": ["USDC", "USDT"]
+    },
+    "rate": {
+      "type": "number",
+      "description": "KES per 1 USD used for the quote"
+    },
+    "feePct": {
+      "type": "number",
+      "description": "Ramp fee % applied to the quote"
+    },
+    "walletAddress": {
+      "type": "string",
+      "description": "User's platform wallet address"
+    },
+    "merchantTransactionId": {
+      "type": "string",
+      "description": "Our reference sent to Fingo Pay"
+    },
+    "fingoTransactionId": {
+      "type": "string",
+      "description": "Fingo Pay transaction id (txn_*)"
+    },
+    "processorReference": {
+      "type": "string",
+      "description": "M-Pesa receipt number"
+    },
+    "cryptoTxHash": {
+      "type": "string",
+      "description": "On-chain tx hash of the stablecoin leg"
+    },
+    "claimToken": {
+      "type": "string",
+      "description": "Internal processing lock to prevent double-settlement"
+    },
+    "message": {
+      "type": "string",
+      "description": "Latest status / error message"
+    },
+    "createdAt": {
+      "type": "string"
+    },
+    "updatedAt": {
+      "type": "string"
+    }
+  },
+  "required": ["userId", "direction", "status", "phoneNumber", "chain", "token"],
+  "rls": {
+    "read": {
+      "$or": [
+        { "data.userId": "{{user.id}}" },
+        { "user_condition": { "role": "admin" } }
+      ]
+    },
+    "create": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "update": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}

@@ -22,7 +22,9 @@
         "GOV_SALE",
         "REFERRAL",
         "FEE",
-        "GAS"
+        "GAS",
+        "RAMP_BUY",
+        "RAMP_SELL"
       ],
       "description": "Purpose of the on-chain movement"
     },
