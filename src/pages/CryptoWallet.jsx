@@ -13,11 +13,12 @@ import { friendlyWalletError } from "@/lib/walletErrors";
 import CryptoLogo from "@/components/ui/CryptoLogo";
 import WithdrawalReceipt from "@/components/WithdrawalReceipt";
 import AddCustomToken from "@/components/wallet/AddCustomToken";
+import FiatRampPanel from "@/components/wallet/FiatRampPanel";
 import {
   Copy, RefreshCw, ArrowUpRight, Loader2, Plus,
   ExternalLink, ShieldCheck, ArrowDownToLine, Eye, EyeOff,
   ChevronDown, History, QrCode, Send as SendIcon, Wallet as WalletIcon,
-  Ticket, Heart, Trophy, Gem, TrendingUp, Award,
+  Ticket, Heart, Trophy, Gem, TrendingUp, Award, Banknote, HandCoins,
 } from "lucide-react";
 
 // Transaction type → display label, badge icon, and amount sign/colour.
@@ -33,6 +34,8 @@ const TX_META = {
   REFERRAL:     { labelKey: "wallet.tx.referral",   icon: TrendingUp,       positive: true },
   FEE:          { labelKey: "wallet.tx.fee",        icon: ArrowUpRight,    positive: false },
   GAS:          { labelKey: "wallet.tx.gas",        icon: ArrowUpRight,    positive: false },
+  RAMP_BUY:     { labelKey: "wallet.tx.ramp_buy",   icon: Banknote,        positive: true },
+  RAMP_SELL:    { labelKey: "wallet.tx.ramp_sell",  icon: HandCoins,       positive: false },
 };
 
 // Groups an ordered transaction list into date buckets ("Today", "Yesterday",
@@ -222,6 +225,13 @@ export default function CryptoWallet() {
     });
   };
 
+  // Refresh balances/activity once a Fingo ramp settles.
+  const onRampSettled = React.useCallback(() => {
+    loadTxs();
+    setTimeout(() => sync(true), 3000);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user]);
+
   const copy = (text) => {
     navigator.clipboard.writeText(text);
     toast({ title: t("wallet.copied") });
@@ -332,6 +342,10 @@ export default function CryptoWallet() {
             <Pill icon={SendIcon} label={t("wallet.send")} onClick={() => setPanel(panel === "send" ? null : "send")} />
             <Pill icon={RefreshCw} label={t("wallet.sync")} onClick={() => sync(true)} />
           </div>
+          <div className="relative mt-2.5 flex gap-2.5">
+            <Pill icon={Banknote} label={t("ramp.buy")} onClick={() => setPanel(panel === "buy" ? null : "buy")} />
+            <Pill icon={HandCoins} label={t("ramp.sell")} onClick={() => setPanel(panel === "sell" ? null : "sell")} />
+          </div>
         </div>
       )}
 
@@ -428,6 +442,15 @@ export default function CryptoWallet() {
             </Button>
           </form>
         </div>
+      )}
+
+      {!loading && address && (panel === "buy" || panel === "sell") && (
+        <FiatRampPanel
+          key={panel}
+          mode={panel}
+          onClose={() => setPanel(null)}
+          onSettled={onRampSettled}
+        />
       )}
 
       {/* Agent earnings (referral + winning bonus) — ledger-tracked in the
